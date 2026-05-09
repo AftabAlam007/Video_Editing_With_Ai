@@ -19,6 +19,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/videos")
+@CrossOrigin("*")
 public class VideoController {
 
     @Autowired
@@ -41,15 +42,15 @@ public class VideoController {
         if (prompt == null || prompt.trim().isEmpty()) {
             return ResponseEntity.badRequest().body(Map.of("error", "Prompt is required"));
         }
-        
+
         VideoJob job = processingService.getJobStatus(jobId);
         if (job == null) {
             return ResponseEntity.notFound().build();
         }
-        
+
         // Start async processing
         processingService.processVideoJobAsync(jobId, prompt);
-        
+
         return ResponseEntity.ok(Map.of("status", "PROCESSING", "message", "Processing started"));
     }
 
@@ -59,24 +60,6 @@ public class VideoController {
         if (job == null) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok(job);
-    }
-
-    @PostMapping("/{jobId}/progress")
-    public ResponseEntity<?> updateJobProgress(@PathVariable Long jobId, @RequestBody Map<String, Object> request) {
-        Integer progressPercentage = parseProgress(request.get("progressPercentage"));
-        if (progressPercentage == null) {
-            progressPercentage = parseProgress(request.get("progress"));
-        }
-
-        String progressMessage = request.get("message") != null ? String.valueOf(request.get("message")) : null;
-        String status = request.get("status") != null ? String.valueOf(request.get("status")) : null;
-
-        VideoJob job = processingService.updateJobProgress(jobId, progressPercentage, progressMessage, status);
-        if (job == null) {
-            return ResponseEntity.notFound().build();
-        }
-
         return ResponseEntity.ok(job);
     }
 
@@ -98,29 +81,10 @@ public class VideoController {
         }
 
         Resource resource = new FileSystemResource(file);
-        
+
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getName() + "\"")
-                .header(HttpHeaders.CACHE_CONTROL, "no-store, no-cache, must-revalidate, max-age=0")
-                .header(HttpHeaders.PRAGMA, "no-cache")
-                .header(HttpHeaders.EXPIRES, "0")
                 .contentType(MediaType.parseMediaType("video/mp4"))
                 .body(resource);
-    }
-
-    private Integer parseProgress(Object value) {
-        if (value == null) {
-            return null;
-        }
-
-        if (value instanceof Number) {
-            return ((Number) value).intValue();
-        }
-
-        try {
-            return Integer.parseInt(String.valueOf(value));
-        } catch (NumberFormatException e) {
-            return null;
-        }
     }
 }
