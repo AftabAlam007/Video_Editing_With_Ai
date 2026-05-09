@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import axios from 'axios';
 import VideoUpload from './components/VideoUpload.jsx';
 import VideoPlayer from './components/VideoPlayer.jsx';
@@ -12,6 +12,8 @@ function App() {
   const [status, setStatus] = useState('');
   const [prompt, setPrompt] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [processingProgress, setProcessingProgress] = useState(0);
+  const pollIntervalRef = useRef(null);
 
   const quickEdits = [
     'Cinematic', 'Enhance', 'Reel 9:16', 'Background Blur', 
@@ -46,6 +48,7 @@ function App() {
 
     setIsProcessing(true);
     setStatus('PROCESSING');
+    setProcessingProgress(0);
     try {
       const response = await axios.post(`${API_BASE_URL}/api/videos/${jobId}/process`, {
         prompt: prompt
@@ -62,25 +65,40 @@ function App() {
   };
 
   const pollStatus = async (id) => {
-    const interval = setInterval(async () => {
+    setProcessingProgress(5); // Start at 5%
+    pollIntervalRef.current = setInterval(async () => {
       try {
         const response = await axios.get(`${API_BASE_URL}/api/videos/${id}`);
         setStatus(response.data.status);
         if (response.data.status === 'COMPLETED') {
-          clearInterval(interval);
+          clearInterval(pollIntervalRef.current);
           setIsProcessing(false);
+          setProcessingProgress(100);
           // Set the final video URL for the player to play
           setVideoUrl(`${API_BASE_URL}/api/videos/${id}/download`);
         } else if (response.data.status === 'FAILED') {
-          clearInterval(interval);
+          clearInterval(pollIntervalRef.current);
           setIsProcessing(false);
+          setProcessingProgress(0);
+        } else {
+          // Simulated progress for UI while processing
+          setProcessingProgress(p => (p >= 95 ? 95 : p + Math.floor(Math.random() * 5) + 1));
         }
       } catch (error) {
         console.error("Error checking status:", error);
-        clearInterval(interval);
+        clearInterval(pollIntervalRef.current);
         setIsProcessing(false);
       }
     }, 2000);
+  };
+
+  const handleCancel = () => {
+    if (pollIntervalRef.current) {
+      clearInterval(pollIntervalRef.current);
+    }
+    setIsProcessing(false);
+    setStatus('CANCELED BY USER');
+    setProcessingProgress(0);
   };
 
   return (
@@ -129,6 +147,18 @@ function App() {
               {isProcessing ? 'Processing...' : 'Apply AI Edit'}
             </button>
             
+            {isProcessing && (
+              <div className="mt-6 border border-gray-700 p-4 rounded-lg bg-gray-900 shadow-inner">
+                <div className="w-full bg-gray-800 rounded-full h-2.5 mb-3">
+                  <div className="bg-gradient-to-r from-purple-500 to-blue-500 h-2.5 rounded-full transition-all duration-500" style={{ width: `${processingProgress}%` }}></div>
+                </div>
+                <div className="flex justify-between items-center px-1">
+                  <p className="text-sm text-gray-300 font-medium animate-pulse">Processing... {processingProgress}%</p>
+                  <button onClick={handleCancel} className="text-sm text-red-400 hover:text-red-300 underline font-semibold transition">Cancel Process</button>
+                </div>
+              </div>
+            )}
+
             {status && (
               <div className="mt-4 p-3 bg-gray-900 rounded-lg border border-gray-700">
                 <p className="text-sm">Status: <span className="font-semibold text-blue-400">{status}</span></p>
