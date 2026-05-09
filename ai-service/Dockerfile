@@ -7,6 +7,8 @@ RUN apt-get update && apt-get install -y ffmpeg
 
 # Install Python packages
 COPY requirements.txt .
+# PyTorch ka sirf chota CPU version pehle install karein taaki Render crash na ho
+RUN pip install --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
 RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install --no-cache-dir -U openai-whisper
 
