@@ -12,7 +12,10 @@ RUN pip install --no-cache-dir --upgrade pip
 COPY requirements.txt .
 # PyTorch ka sirf chota CPU version pehle install karein taaki Render crash na ho
 RUN pip install --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
-RUN pip install --no-cache-dir setuptools wheel setuptools-rust
+# Install older setuptools (jisme pkg_resources hai)
+RUN pip install --no-cache-dir "setuptools<70" wheel setuptools-rust
+# Whisper ko isolate karke purane setuptools ke sath install karein
+RUN pip install --no-cache-dir --no-build-isolation openai-whisper==20231117
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the rest of the code

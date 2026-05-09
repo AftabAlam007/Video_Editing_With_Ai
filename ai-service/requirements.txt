@@ -3,7 +3,6 @@ uvicorn==0.27.1
 python-multipart==0.0.9
 opencv-python-headless==4.9.0.80
 moviepy==1.0.3
-openai-whisper==20231117
 # Dependencies for Real-ESRGAN and LaMa typically involve PyTorch and specific packages
 # which will be installed conditionally during the AI setup phase.
 # torch==2.2.0
