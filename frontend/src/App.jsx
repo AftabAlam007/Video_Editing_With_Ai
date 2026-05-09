@@ -13,6 +13,7 @@ function App() {
   const [prompt, setPrompt] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingProgress, setProcessingProgress] = useState(0);
+  const [errorMessage, setErrorMessage] = useState('');
   const pollIntervalRef = useRef(null);
 
   const quickEdits = [
@@ -49,6 +50,7 @@ function App() {
     setIsProcessing(true);
     setStatus('PROCESSING');
     setProcessingProgress(0);
+    setErrorMessage('');
     try {
       const response = await axios.post(`${API_BASE_URL}/api/videos/${jobId}/process`, {
         prompt: prompt
@@ -80,6 +82,7 @@ function App() {
           clearInterval(pollIntervalRef.current);
           setIsProcessing(false);
           setProcessingProgress(0);
+          setErrorMessage(response.data.errorMessage || 'Unknown AI processing error occurred.');
         } else {
           // Simulated progress for UI while processing
           setProcessingProgress(p => (p >= 95 ? 95 : p + Math.floor(Math.random() * 5) + 1));
@@ -99,6 +102,7 @@ function App() {
     setIsProcessing(false);
     setStatus('CANCELED BY USER');
     setProcessingProgress(0);
+    setErrorMessage('');
   };
 
   return (
@@ -162,6 +166,11 @@ function App() {
             {status && (
               <div className="mt-4 p-3 bg-gray-900 rounded-lg border border-gray-700">
                 <p className="text-sm">Status: <span className="font-semibold text-blue-400">{status}</span></p>
+                {status === 'FAILED' && errorMessage && (
+                  <div className="mt-2 p-2 bg-red-900/50 border border-red-700 rounded text-red-200 text-xs break-words">
+                    <strong>Error Reason:</strong> {errorMessage}
+                  </div>
+                )}
               </div>
             )}
           </div>
