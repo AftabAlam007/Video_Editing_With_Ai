@@ -12,7 +12,7 @@ RUN pip install --no-cache-dir --upgrade pip
 COPY requirements.txt .
 # PyTorch ka sirf chota CPU version pehle install karein taaki Render crash na ho
 RUN pip install --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
-RUN pip install --no-cache-dir setuptools-rust
+RUN pip install --no-cache-dir setuptools wheel setuptools-rust
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the rest of the code
