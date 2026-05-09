@@ -13,3 +13,12 @@ services:
         sync: false
       - key: DB_PASS
         sync: false
+
+  - type: web
+    name: video-editor-ai
+    env: docker
+    rootDir: ai-service
+    plan: free
+    envVars:
+      - key: PORT
+        value: 8000
