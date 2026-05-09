@@ -24,7 +24,7 @@
 # 🔴 LIVE DEMO
 
 <p align="center">
-  <a href="https://your-demo-link.vercel.app/" target="_blank">
+  <a href="https://video-editing-with-aomfp221e-aftabs-projects-54fee0b4.vercel.app/">
     <img src="https://img.shields.io/badge/🚀 LIVE DEMO Available-8B5CF6?style=for-the-badge&logo=vercel&logoColor=white" />
   </a>
 </p>
