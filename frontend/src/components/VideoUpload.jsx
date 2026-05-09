@@ -1,6 +1,9 @@
 import React, { useState, useRef } from 'react';
 import axios from 'axios';
 
+// Yahan apne Render ke Backend ka URL daalein
+const API_BASE_URL = 'https://video-editor-backend-78jq.onrender.com';
+
 const VideoUpload = ({ onUploadSuccess }) => {
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
@@ -43,7 +46,7 @@ const VideoUpload = ({ onUploadSuccess }) => {
     formData.append('file', file);
 
     try {
-      const response = await axios.post('http://localhost:8080/api/videos/upload', formData, {
+      const response = await axios.post(`${API_BASE_URL}/api/videos/upload`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },

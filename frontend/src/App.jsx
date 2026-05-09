@@ -3,21 +3,8 @@ import axios from 'axios';
 import VideoUpload from './components/VideoUpload.jsx';
 import VideoPlayer from './components/VideoPlayer.jsx';
 
-const EDIT_PRESETS = [
-  { label: 'Cinematic', prompt: 'cinematic karo' },
-  { label: 'Enhance', prompt: 'quality badhao video clear karo' },
-  { label: 'Reel 9:16', prompt: 'reel banao vertical karo' },
-  { label: 'Background Blur', prompt: 'background blur karo' },
-  { label: 'WM Top L', prompt: 'top left watermark hatao' },
-  { label: 'WM Top R', prompt: 'top right watermark hatao' },
-  { label: 'WM Bottom L', prompt: 'bottom left watermark hatao' },
-  { label: 'WM Bottom R', prompt: 'bottom right watermark hatao' },
-  { label: 'WM Center', prompt: 'center watermark hatao' },
-  { label: 'WM All Areas', prompt: 'kahi bhi watermark hatao' },
-  { label: 'Face Clear', prompt: 'face clear karo' },
-  { label: 'Subtitles', prompt: 'subtitle lagao' },
-  { label: 'Music', prompt: 'music lagao' },
-];
+// Yahan apne Render ke Backend ka URL daalein
+const API_BASE_URL = 'https://video-editor-backend-78jq.onrender.com';
 
 function App() {
   const [videoUrl, setVideoUrl] = useState(null);
@@ -25,39 +12,10 @@ function App() {
   const [status, setStatus] = useState('');
   const [prompt, setPrompt] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
-  const [progressPercentage, setProgressPercentage] = useState(0);
-  const [progressMessage, setProgressMessage] = useState('');
-
-  const progressValue = Math.max(0, Math.min(100, Number(progressPercentage) || 0));
-
-  const handlePresetClick = (presetPrompt) => {
-    setPrompt((currentPrompt) => {
-      const promptParts = currentPrompt
-        .split(',')
-        .map((part) => part.trim())
-        .filter(Boolean);
-
-      if (promptParts.includes(presetPrompt)) {
-        return promptParts.filter((part) => part !== presetPrompt).join(', ');
-      }
-
-      return [...promptParts, presetPrompt].join(', ');
-    });
-  };
-
-  const isPresetSelected = (presetPrompt) => {
-    return prompt
-      .split(',')
-      .map((part) => part.trim())
-      .includes(presetPrompt);
-  };
 
   const handleUploadSuccess = (data) => {
     setJobId(data.id);
     setStatus(data.status);
-    setProgressPercentage(data.progressPercentage || 0);
-    setProgressMessage(data.progressMessage || 'Video uploaded');
-    setVideoUrl(null);
     // Assuming backend returns a temporary URL for preview or we just wait for processing
   };
 
@@ -73,10 +31,8 @@ function App() {
 
     setIsProcessing(true);
     setStatus('PROCESSING');
-    setProgressPercentage(5);
-    setProgressMessage('Preparing AI edit');
     try {
-      const response = await axios.post(`http://localhost:8080/api/videos/${jobId}/process`, {
+      const response = await axios.post(`${API_BASE_URL}/api/videos/${jobId}/process`, {
         prompt: prompt
       });
       setStatus(response.data.status);
@@ -86,7 +42,6 @@ function App() {
     } catch (error) {
       console.error("Error processing video:", error);
       setStatus('FAILED');
-      setProgressMessage('Processing failed');
       setIsProcessing(false);
     }
   };
@@ -94,26 +49,20 @@ function App() {
   const pollStatus = async (id) => {
     const interval = setInterval(async () => {
       try {
-        const response = await axios.get(`http://localhost:8080/api/videos/${id}`);
-        const job = response.data;
-        setStatus(job.status);
-        setProgressPercentage(job.progressPercentage || 0);
-        setProgressMessage(job.progressMessage || '');
-        if (job.status === 'COMPLETED') {
+        const response = await axios.get(`${API_BASE_URL}/api/videos/${id}`);
+        setStatus(response.data.status);
+        if (response.data.status === 'COMPLETED') {
           clearInterval(interval);
           setIsProcessing(false);
-          setProgressPercentage(100);
           // Set the final video URL for the player to play
-          setVideoUrl(`http://localhost:8080/api/videos/${id}/download?t=${Date.now()}`);
-        } else if (job.status === 'FAILED') {
+          setVideoUrl(`${API_BASE_URL}/api/videos/${id}/download`);
+        } else if (response.data.status === 'FAILED') {
           clearInterval(interval);
-          setProgressMessage(job.errorMessage || 'Processing failed');
           setIsProcessing(false);
         }
       } catch (error) {
         console.error("Error checking status:", error);
         clearInterval(interval);
-        setProgressMessage('Could not check processing status');
         setIsProcessing(false);
       }
     }, 2000);
@@ -138,40 +87,6 @@ function App() {
 
           <div className="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700">
             <h2 className="text-xl font-semibold mb-4">2. Enter AI Prompt</h2>
-            <div className="mb-4">
-              <div className="flex items-center justify-between gap-3 mb-2">
-                <p className="text-sm font-medium text-gray-300">Quick edits</p>
-                {prompt && (
-                  <button
-                    type="button"
-                    onClick={() => setPrompt('')}
-                    className="text-xs font-semibold text-gray-400 hover:text-white transition"
-                  >
-                    Clear
-                  </button>
-                )}
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                {EDIT_PRESETS.map((preset) => {
-                  const selected = isPresetSelected(preset.prompt);
-
-                  return (
-                    <button
-                      key={preset.prompt}
-                      type="button"
-                      onClick={() => handlePresetClick(preset.prompt)}
-                      className={`min-h-10 rounded-lg border px-3 py-2 text-sm font-semibold transition ${
-                        selected
-                          ? 'border-purple-400 bg-purple-600 text-white shadow-lg shadow-purple-900/30'
-                          : 'border-gray-600 bg-gray-900 text-gray-200 hover:border-blue-400 hover:text-white'
-                      }`}
-                    >
-                      {preset.label}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
             <textarea 
               className="w-full bg-gray-900 border border-gray-600 rounded-lg p-3 text-white focus:outline-none focus:border-purple-500 transition"
               rows="3"
@@ -184,26 +99,12 @@ function App() {
               disabled={isProcessing || !jobId}
               className={`mt-4 w-full py-3 rounded-lg font-bold transition ${isProcessing || !jobId ? 'bg-gray-600 cursor-not-allowed' : 'bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 shadow-lg'}`}
             >
-              {isProcessing ? `Processing... ${progressValue}%` : 'Apply AI Edit'}
+              {isProcessing ? 'Processing...' : 'Apply AI Edit'}
             </button>
             
             {status && (
               <div className="mt-4 p-3 bg-gray-900 rounded-lg border border-gray-700">
                 <p className="text-sm">Status: <span className="font-semibold text-blue-400">{status}</span></p>
-                {(isProcessing || progressValue > 0) && (
-                  <div className="mt-3">
-                    <div className="flex items-center justify-between text-xs text-gray-400 mb-1">
-                      <span>{progressMessage || 'Processing video'}</span>
-                      <span className="font-semibold text-blue-300">{progressValue}%</span>
-                    </div>
-                    <div className="h-2 w-full overflow-hidden rounded-full bg-gray-700">
-                      <div
-                        className="h-full rounded-full bg-gradient-to-r from-purple-500 to-blue-500 transition-all duration-500"
-                        style={{ width: `${progressValue}%` }}
-                      />
-                    </div>
-                  </div>
-                )}
               </div>
             )}
           </div>
