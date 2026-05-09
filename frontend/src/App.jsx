@@ -13,6 +13,21 @@ function App() {
   const [prompt, setPrompt] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
 
+  const quickEdits = [
+    'Cinematic', 'Enhance', 'Reel 9:16', 'Background Blur', 
+    'WM Top L', 'WM Top R', 'WM Bottom L', 'WM Bottom R', 'WM Center', 'WM All Areas', 
+    'Face Clear', 'Subtitles', 'Music'
+  ];
+
+  const handleQuickEdit = (edit) => {
+    setPrompt(prev => {
+      if (prev) {
+        return prev.includes(edit) ? prev : `${prev}, ${edit}`;
+      }
+      return edit;
+    });
+  };
+
   const handleUploadSuccess = (data) => {
     setJobId(data.id);
     setStatus(data.status);
@@ -87,6 +102,18 @@ function App() {
 
           <div className="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700">
             <h2 className="text-xl font-semibold mb-4">2. Enter AI Prompt</h2>
+            
+            <div className="mb-4">
+              <p className="text-sm text-gray-400 mb-2">Quick edits</p>
+              <div className="flex flex-wrap gap-2">
+                {quickEdits.map((edit) => (
+                  <button key={edit} onClick={() => handleQuickEdit(edit)} className="text-xs bg-gray-700 hover:bg-purple-600 px-3 py-1.5 rounded-full transition">
+                    {edit}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <textarea 
               className="w-full bg-gray-900 border border-gray-600 rounded-lg p-3 text-white focus:outline-none focus:border-purple-500 transition"
               rows="3"
