@@ -1,0 +1,37 @@
+======================================================
+🎬 LOCAL AI VIDEO EDITOR - PROJECT DETAILS & SETUP
+======================================================
+
+1. PROJECT OVERVIEW
+--------------------
+Yeh ek full-stack AI video editing web application hai jahan user text prompt (jaise "Make it cinematic", "Add subtitles") daalkar video edit kar sakte hain. Isme auto-subtitling, format conversion aur filters jaise features hain.
+
+2. TOOLS & TECH STACK USED
+--------------------
+- Frontend : React.js, Vite, Tailwind CSS, Axios (Port 5137)
+- Backend  : Java 17, Spring Boot, Maven (Port 8080)
+- Database : MySQL (video_editor_db)
+- AI/Video : Python 3.10+, FFmpeg, OpenAI Whisper (Port 8000)
+
+3. STEP-BY-STEP PROCESS FLOW (Kaise kaam karta hai?)
+--------------------
+1) UPLOAD: React UI se video upload hota hai aur Spring Boot backend usey 'uploads' folder me save karta hai. Database me job create hota hai.
+2) PROMPT: User text prompt enter karta hai aur backend ko bhejta hai.
+3) AI PROCESSING: Spring Boot wo prompt aur video details Python AI service ko bhejta hai.
+4) EXECUTION: Python prompt ko samajhta hai aur FFmpeg/Whisper ke zariye filters, subtitles, wagaira apply karta hai. Temporary files 'temp_processing' me bante hain.
+5) COMPLETION: Final video 'outputs' folder me save hota hai aur Spring Boot ko 'COMPLETED' status update mil jata hai.
+6) DOWNLOAD: React frontend backend se status check karta rehta hai (polling). Complete hone par user ko download link mil jata hai.
+
+4. RUNNING THE PROJECT LOCALLY
+--------------------
+- DATABASE:
+  MySQL cmd open karein aur run karein: CREATE DATABASE video_editor_db;
+
+- AI SERVICE (Python):
+  `cd ai-service` -> `pip install -r requirements.txt` -> `python -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload`
+
+- BACKEND (Spring Boot):
+  `cd backend` -> `mvn spring-boot:run`
+
+- FRONTEND (React):
+  `cd frontend` -> Rename postcss.config.js to postcss.config.cjs -> `npm install` -> `npm run dev`

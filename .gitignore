@@ -1,0 +1,28 @@
+# Node / Frontend
+node_modules/
+frontend/dist/
+npm-debug.log
+
+# Python / AI Service
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+
+# Java / Backend
+target/
+*.class
+
+# Videos & Temporary Processing Files (CRITICAL FOR GITHUB)
+uploads/
+outputs/
+temp_processing/
+*.mp4
+*.wav
+*.srt
+
+# OS & IDEs
+.vscode/
+.idea/
+.DS_Store
