@@ -14,7 +14,7 @@ services:
       - key: DB_PASS
         sync: false
       - key: AI_SERVICE_URL
-        value: https://video-editor-ai.onrender.com
+        value: http://video-editor-ai:8000
 
   - type: web
     name: video-editor-ai
