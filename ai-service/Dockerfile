@@ -2,8 +2,11 @@
 FROM python:3.10-slim
 WORKDIR /app
 
-# Install FFmpeg and Build Tools (GCC, C++) required for AI packages
-RUN apt-get update && apt-get install -y ffmpeg gcc g++ make
+# Install FFmpeg, Build Tools, and Rust Compiler (for Whisper/tiktoken)
+RUN apt-get update && apt-get install -y ffmpeg gcc g++ make rustc cargo git
+
+# Upgrade pip to ensure it downloads pre-built wheels
+RUN pip install --no-cache-dir --upgrade pip
 
 # Install Python packages
 COPY requirements.txt .
