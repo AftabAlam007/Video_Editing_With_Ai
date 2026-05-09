@@ -90,21 +90,22 @@ public class VideoProcessingService {
 
                 HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
 
-                ResponseEntity<String> response = restTemplate.postForEntity(aiUrl, requestEntity, String.class);
+                // String ki jagah byte[] use karein taaki hum Python se aayi video ko download
+                // kar sakein
+                ResponseEntity<byte[]> response = restTemplate.postForEntity(aiUrl, requestEntity, byte[].class);
 
-                if (response.getStatusCode().is2xxSuccessful()) {
-                    // Python service should return a JSON with output_path or we assume standard
-                    // output location
-                    // For simplicity, let's assume Python service saves to
-                    // ../outputs/output_{jobId}.mp4 and returns path
+                if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
                     String outputPath = rootLocationOutputs.resolve("output_" + jobId + ".mp4").toString();
+
+                    // Python server se aayi video bytes ko Java ke outputs folder me save karein
+                    Files.write(Paths.get(outputPath), response.getBody());
 
                     job.setStoredOutputPath(outputPath);
                     job.setStatus("COMPLETED");
                     job.setCompletedAt(LocalDateTime.now());
                 } else {
                     job.setStatus("FAILED");
-                    job.setErrorMessage("AI Service returned error code: " + response.getStatusCodeValue());
+                    job.setErrorMessage("AI Service returned error code: " + response.getStatusCode().value());
                 }
 
             } catch (Exception e) {

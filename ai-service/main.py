@@ -2,7 +2,7 @@ import os
 import shutil
 from typing import Optional
 from fastapi import FastAPI, File, UploadFile, Form
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
 import logging
 from pipeline import process_video
 
@@ -46,7 +46,8 @@ async def process_video_endpoint(
         if os.path.exists(input_path):
             os.remove(input_path)
             
-        return JSONResponse(status_code=200, content={"message": result["message"], **result})
+        # Return the actual video file instead of JSON so Java can download it
+        return FileResponse(path=output_path, media_type="video/mp4", filename=f"output_{job_id}.mp4")
         
     except Exception as e:
         logger.error(f"Error processing job {job_id}: {str(e)}")
