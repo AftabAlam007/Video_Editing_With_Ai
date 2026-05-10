@@ -40,6 +40,9 @@ def generate_subtitles(input_path, output_path):
         subprocess.run([
             "ffmpeg", "-y", "-i", input_path,
             "-vf", f"subtitles={escaped_srt}:force_style='FontSize=24,PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000,BorderStyle=1,Outline=1,Shadow=1'",
+            "-c:v", "libx264",
+            "-preset", "ultrafast",
+            "-threads", "1",
             "-c:a", "copy", output_path
         ], check=True)
         
