@@ -7,8 +7,8 @@ logger = logging.getLogger(__name__)
 def generate_subtitles(input_path, output_path):
     try:
         import whisper
-        logger.info("Loading Whisper model (base)...")
-        model = whisper.load_model("base")
+        logger.info("Loading Whisper model (tiny) to save RAM...")
+        model = whisper.load_model("tiny")
         
         audio_path = "temp_processing/temp_audio.wav"
         subprocess.run(["ffmpeg", "-y", "-i", input_path, "-vn", "-acodec", "pcm_s16le", "-ar", "16000", "-ac", "1", audio_path], check=True)
